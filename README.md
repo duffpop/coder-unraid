@@ -23,19 +23,35 @@ Images are rebuilt automatically whenever Coder publishes a release. Tags follow
 
 ## Install
 
-1. In Unraid open **Docker > Template Repositories** and add
-   `https://github.com/duffpop/coder-unraid`, then save.
-2. Click **Add Container**, pick **coder** from the template dropdown.
-3. Fill in:
-   - **Access URL**: how browsers and workspaces reach Coder, for example
-     `http://192.168.1.10:7080`, or `https://coder.example.com` if you have a reverse proxy.
-     Never `localhost`.
-   - **Bootstrap Admin Email / Username / Password**: the first admin account.
-     Leave all three blank if you prefer to create it in the web UI.
-   - **License Key**: optional. Paste the Premium license JWT. It is applied on start
-     when the bootstrap admin fields are set.
-4. Apply. First start downloads the built-in PostgreSQL binaries, so give it a minute.
-5. Open the WebUI and log in with the bootstrap admin.
+Unraid no longer accepts third-party template repository URLs in the UI (the field was
+removed in 6.10), so the template is installed by copying one file to the flash drive.
+Run this in the Unraid terminal:
+
+```sh
+mkdir -p /boot/config/plugins/community.applications/private/duffpop
+curl -fsSL -o /boot/config/plugins/community.applications/private/duffpop/coder.xml \
+  https://raw.githubusercontent.com/duffpop/coder-unraid/main/templates/coder.xml
+```
+
+Then open **Apps**, find **coder** under the **Private** category, and click Install.
+Re-run the `curl` to pick up template updates.
+
+Alternative without Community Applications: save the file as
+`/boot/config/plugins/dockerMan/templates-user/my-coder.xml` instead. It then appears
+under **User templates** in the Template dropdown of **Docker > Add Container**.
+
+In the form, fill in:
+
+- **Access URL**: how browsers and workspaces reach Coder, for example
+  `http://192.168.1.10:7080`, or `https://coder.example.com` if you have a reverse proxy.
+  Never `localhost`.
+- **Bootstrap Admin Email / Username / Password**: the first admin account.
+  Leave all three blank if you prefer to create it in the web UI.
+- **License Key**: optional. Paste the Premium license JWT. It is applied on start
+  when the bootstrap admin fields are set.
+
+Apply. First start downloads the built-in PostgreSQL binaries, so give it a minute.
+Then open the WebUI and log in with the bootstrap admin.
 
 Watch the container log for lines starting with `[coder-unraid]` and `[coder-bootstrap]`.
 
