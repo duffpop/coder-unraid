@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>coder</Name>
+  <Repository>ghcr.io/duffpop/coder-unraid:latest</Repository>
+  <Registry>https://github.com/duffpop/coder-unraid/pkgs/container/coder-unraid</Registry>
+  <Network>bridge</Network>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/duffpop/coder-unraid/issues</Support>
+  <Project>https://coder.com</Project>
+  <Overview>Coder (coder.com) provisions self-hosted cloud development environments (workspaces) defined with Terraform. Workspaces run as Docker containers on this Unraid server through the mounted docker socket, and users connect with VS Code, JetBrains, the browser, or SSH.
+
+This build wraps the official ghcr.io/coder/coder image with an Unraid-friendly entrypoint:
+- PUID/PGID support and automatic ownership fixes for the appdata folder.
+- Automatic docker socket access (no manual --group-add needed).
+- First-run bootstrap: creates the admin account from the Bootstrap Admin fields.
+- Applies the Premium license from the License Key field at startup, and skips it on later starts if it is already installed.
+
+IMPORTANT: Access URL must be an address workspaces and your browser can reach, for example http://192.168.1.10:7080 or https://coder.example.com behind a reverse proxy. It cannot be localhost. Blank optional fields are ignored.</Overview>
+  <Category>Productivity: Tools:Utilities Cloud:</Category>
+  <WebUI>http://[IP]:[PORT:7080]</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/duffpop/coder-unraid/main/templates/coder.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/duffpop/coder-unraid/main/icon.png</Icon>
+  <ReadMe>https://raw.githubusercontent.com/duffpop/coder-unraid/main/README.md</ReadMe>
+  <ExtraSearchTerms>coder.com dev environment workspace cloud ide terraform code-server</ExtraSearchTerms>
+  <Requires>Internet access on first start (downloads the built-in PostgreSQL binaries). Set Access URL to a LAN IP or domain that workspaces can reach.</Requires>
+  <License>AGPL-3.0 (Coder), MIT (this template)</License>
+  <ExtraParams></ExtraParams>
+  <PostArgs></PostArgs>
+  <Date>2026-10-05</Date>
+  <Changes>### 2026-10-05
+- Initial release</Changes>
+  <MinVer>6.12.0</MinVer>
+
+  <!-- Essentials -->
+  <Config Name="WebUI Port" Target="7080" Default="7080" Mode="tcp" Description="HTTP port for the Coder dashboard and API. Must match the port in Access URL unless you use a reverse proxy." Type="Port" Display="always" Required="true" Mask="false">7080</Config>
+  <Config Name="Appdata" Target="/home/coder" Default="/mnt/user/appdata/coder" Mode="rw" Description="Persistent data: built-in PostgreSQL database, config and Terraform cache. Set the appdata share to cache-only (or use /mnt/cache/appdata/coder) so the database does not run on the FUSE array path." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/coder</Config>
+  <Config Name="Docker Socket" Target="/var/run/docker.sock" Default="/var/run/docker.sock" Mode="rw" Description="Lets Coder create workspace containers on this server. Required for the built-in Docker template." Type="Path" Display="always" Required="false" Mask="false">/var/run/docker.sock</Config>
+  <Config Name="Access URL" Target="CODER_ACCESS_URL" Default="" Mode="" Description="External URL users and workspaces use to reach Coder, e.g. http://192.168.1.10:7080 or https://coder.example.com. Must NOT be localhost or 127.0.0.1." Type="Variable" Display="always" Required="true" Mask="false"></Config>
+  <Config Name="License Key" Target="CODER_LICENSE" Default="" Mode="" Description="Optional Coder Premium license (the long JWT string). Applied automatically on start when the Bootstrap Admin fields are filled in. Leave blank for the free tier." Type="Variable" Display="always" Required="false" Mask="true"></Config>
+  <Config Name="Bootstrap Admin Email" Target="CODER_FIRST_USER_EMAIL" Default="" Mode="" Description="Email for the first admin account. Together with username and password this creates the account on first start and is used to apply the license. Leave all three blank to set up the admin in the web UI instead." Type="Variable" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Bootstrap Admin Username" Target="CODER_FIRST_USER_USERNAME" Default="admin" Mode="" Description="Username for the first admin account. Letters, numbers and single hyphens only, up to 32 characters." Type="Variable" Display="always" Required="false" Mask="false">admin</Config>
+  <Config Name="Bootstrap Admin Password" Target="CODER_FIRST_USER_PASSWORD" Default="" Mode="" Description="Password for the first admin account. Coder requires a reasonably strong password: 12 or more characters mixing cases, digits and symbols, 64 max. Keep it current here if you change it in the UI, otherwise license automation stops working." Type="Variable" Display="always" Required="false" Mask="true"></Config>
+
+  <!-- Advanced -->
+  <Config Name="Bootstrap Admin Full Name" Target="CODER_FIRST_USER_FULL_NAME" Default="" Mode="" Description="Optional display name for the first admin account." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="Wildcard Access URL" Target="CODER_WILDCARD_ACCESS_URL" Default="" Mode="" Description="Wildcard hostname for workspace web apps and port forwarding, e.g. *.coder.example.com. Needs matching DNS and TLS. Leave blank to disable." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="PostgreSQL URL" Target="CODER_PG_CONNECTION_URL" Default="" Mode="" Description="External PostgreSQL 13+ connection string, e.g. postgresql://coder:secret@192.168.1.10:5432/coder?sslmode=disable. Leave blank to use the built-in database stored in Appdata." Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+  <Config Name="Telemetry" Target="CODER_TELEMETRY_ENABLE" Default="true|false" Mode="" Description="Send anonymised usage data to Coder." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+  <Config Name="Update Check" Target="CODER_UPDATE_CHECK" Default="false|true" Mode="" Description="Show a notice in the dashboard when a new Coder release is available." Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="Disable Password Auth" Target="CODER_DISABLE_PASSWORD_AUTH" Default="false|true" Mode="" Description="Only allow OIDC or GitHub login. Note: license automation logs in with the bootstrap admin password, so keep this false if you rely on it." Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="OIDC Issuer URL" Target="CODER_OIDC_ISSUER_URL" Default="" Mode="" Description="OIDC provider issuer URL, e.g. https://auth.example.com/application/o/coder/." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="OIDC Client ID" Target="CODER_OIDC_CLIENT_ID" Default="" Mode="" Description="OIDC client ID." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="OIDC Client Secret" Target="CODER_OIDC_CLIENT_SECRET" Default="" Mode="" Description="OIDC client secret." Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+  <Config Name="OIDC Allow Signups" Target="CODER_OIDC_ALLOW_SIGNUPS" Default="true|false" Mode="" Description="Let new users register through OIDC." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+  <Config Name="GitHub OAuth Client ID" Target="CODER_OAUTH2_GITHUB_CLIENT_ID" Default="" Mode="" Description="GitHub OAuth app client ID for GitHub login." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="GitHub OAuth Client Secret" Target="CODER_OAUTH2_GITHUB_CLIENT_SECRET" Default="" Mode="" Description="GitHub OAuth app client secret." Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+  <Config Name="GitHub Allowed Orgs" Target="CODER_OAUTH2_GITHUB_ALLOWED_ORGS" Default="" Mode="" Description="Comma-separated GitHub organisations whose members may log in. Required when GitHub login is enabled unless CODER_OAUTH2_GITHUB_ALLOW_EVERYONE is set via Extra Parameters." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="GitHub Allow Signups" Target="CODER_OAUTH2_GITHUB_ALLOW_SIGNUPS" Default="true|false" Mode="" Description="Let new users register through GitHub." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+  <Config Name="TLS Enable" Target="CODER_TLS_ENABLE" Default="false|true" Mode="" Description="Terminate HTTPS inside the container on the TLS port using the certificate below. Most Unraid setups use a reverse proxy instead and keep this false." Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="TLS Certificates" Target="/certs" Default="/mnt/user/appdata/coder/certs" Mode="ro" Description="Folder holding the TLS certificate and key when TLS Enable is true." Type="Path" Display="advanced" Required="false" Mask="false">/mnt/user/appdata/coder/certs</Config>
+  <Config Name="TLS Cert File" Target="CODER_TLS_CERT_FILE" Default="/certs/fullchain.pem" Mode="" Description="Path inside the container to the PEM certificate. Only used when TLS Enable is true." Type="Variable" Display="advanced" Required="false" Mask="false">/certs/fullchain.pem</Config>
+  <Config Name="TLS Key File" Target="CODER_TLS_KEY_FILE" Default="/certs/privkey.pem" Mode="" Description="Path inside the container to the PEM private key. Only used when TLS Enable is true." Type="Variable" Display="advanced" Required="false" Mask="false">/certs/privkey.pem</Config>
+  <Config Name="TLS Port" Target="7443" Default="7443" Mode="tcp" Description="HTTPS port, only used when TLS Enable is true." Type="Port" Display="advanced" Required="false" Mask="false">7443</Config>
+  <Config Name="STUN Servers" Target="CODER_DERP_SERVER_STUN_ADDRESSES" Default="" Mode="" Description="Comma-separated STUN servers for direct connections, e.g. stun.l.google.com:19302. Leave blank for the Coder default. Use the value 'disable' to turn STUN off." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="Prometheus Metrics" Target="CODER_PROMETHEUS_ENABLE" Default="false|true" Mode="" Description="Expose Prometheus metrics on the Metrics port." Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="Metrics Port" Target="2112" Default="2112" Mode="tcp" Description="Prometheus metrics port, only used when Prometheus Metrics is true." Type="Port" Display="advanced" Required="false" Mask="false">2112</Config>
+  <Config Name="Provisioner Daemons" Target="CODER_PROVISIONER_DAEMONS" Default="3" Mode="" Description="Number of concurrent Terraform provisioners. Lower this on small servers." Type="Variable" Display="advanced" Required="false" Mask="false">3</Config>
+  <Config Name="Experiments" Target="CODER_EXPERIMENTS" Default="" Mode="" Description="Comma-separated experimental features to enable, or * for all." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="Log Filter" Target="CODER_LOG_FILTER" Default="" Mode="" Description="Regex to enable debug logs for matching loggers. Leave blank for normal logging." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="User ID the Coder process runs as. 99 is Unraid's nobody user." Type="Variable" Display="advanced" Required="false" Mask="false">99</Config>
+  <Config Name="PGID" Target="PGID" Default="100" Mode="" Description="Group ID the Coder process runs as. 100 is Unraid's users group." Type="Variable" Display="advanced" Required="false" Mask="false">100</Config>
+
+  <!-- Fixed internals -->
+  <Config Name="HTTP Address" Target="CODER_HTTP_ADDRESS" Default="0.0.0.0:7080" Mode="" Description="Internal bind address. Do not change." Type="Variable" Display="always-hide" Required="false" Mask="false">0.0.0.0:7080</Config>
+  <Config Name="TLS Address" Target="CODER_TLS_ADDRESS" Default="0.0.0.0:7443" Mode="" Description="Internal TLS bind address. Do not change." Type="Variable" Display="always-hide" Required="false" Mask="false">0.0.0.0:7443</Config>
+  <Config Name="Prometheus Address" Target="CODER_PROMETHEUS_ADDRESS" Default="0.0.0.0:2112" Mode="" Description="Internal metrics bind address. Do not change." Type="Variable" Display="always-hide" Required="false" Mask="false">0.0.0.0:2112</Config>
+</Container>
